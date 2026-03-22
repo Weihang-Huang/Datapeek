@@ -1,5 +1,7 @@
 # DataPeek
 
+New: Please get binary here. Now only windows version is available. OSX, Linux pending. https://secure.eu.internxt.com/sh/folder/pc-Q0NcmRkeSTpAe9uflbw/DtM0wOp-
+
 **Visually inspect, edit, and export non-human-readable binary data files.**
 
 DataPeek is a free, open-source web application that lets you upload a single binary data file, auto-detects its format, and renders its contents in an interactive spreadsheet-style visualizer. You can search, sort, edit, add/delete rows and columns, and export to multiple formats — all with zero persistence.
