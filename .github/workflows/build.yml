@@ -1,0 +1,154 @@
+name: Build DataPeek Binaries
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            artifact: datapeek-linux-x64
+            ext: ""
+          - os: windows-latest
+            artifact: datapeek-windows-x64
+            ext: ".exe"
+          - os: macos-13          # Intel
+            artifact: datapeek-macos-x64
+            ext: ""
+          - os: macos-14          # Apple Silicon
+            artifact: datapeek-macos-arm64
+            ext: ""
+
+    runs-on: ${{ matrix.os }}
+    name: Build ${{ matrix.artifact }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install system deps (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libhdf5-dev libnetcdf-dev
+
+      - name: Install Python deps
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build with PyInstaller
+        shell: bash
+        run: |
+          pyinstaller \
+            --onedir \
+            --name datapeek \
+            --add-data "web_app/templates${{ runner.os == 'Windows' && ';' || ':' }}web_app/templates" \
+            --add-data "web_app/static${{ runner.os == 'Windows' && ';' || ':' }}web_app/static" \
+            --hidden-import web_app \
+            --hidden-import web_app.app \
+            --hidden-import web_app.config \
+            --hidden-import web_app.utils \
+            --hidden-import web_app.cli \
+            --hidden-import web_app.routes \
+            --hidden-import web_app.routes.upload \
+            --hidden-import web_app.routes.data \
+            --hidden-import web_app.routes.export \
+            --hidden-import web_app.core \
+            --hidden-import web_app.core.format_detector \
+            --hidden-import web_app.core.data_manager \
+            --hidden-import web_app.core.exporter \
+            --hidden-import web_app.core.readers \
+            --hidden-import web_app.core.readers.columnar \
+            --hidden-import web_app.core.readers.hierarchical \
+            --hidden-import web_app.core.readers.serialization \
+            --hidden-import web_app.core.readers.tensor \
+            --hidden-import web_app.core.readers.storage \
+            --hidden-import pyarrow \
+            --hidden-import pyarrow.parquet \
+            --hidden-import pyarrow.feather \
+            --hidden-import pyarrow.orc \
+            --hidden-import fastavro \
+            --hidden-import h5py \
+            --hidden-import netCDF4 \
+            --hidden-import zarr \
+            --hidden-import xarray \
+            --hidden-import numpy \
+            --hidden-import pandas \
+            --hidden-import msgpack \
+            --hidden-import lmdb \
+            --hidden-import safetensors \
+            --hidden-import safetensors.numpy \
+            --hidden-import openpyxl \
+            --hidden-import tables \
+            --hidden-import flask \
+            --hidden-import gunicorn \
+            --collect-submodules pyarrow \
+            --collect-submodules pandas \
+            --collect-submodules numpy \
+            --collect-submodules flask \
+            --collect-submodules xarray \
+            --collect-submodules zarr \
+            --collect-data xarray \
+            --collect-data zarr \
+            web_app/cli.py
+
+      - name: Quick smoke test (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          timeout 8 dist/datapeek/datapeek &
+          sleep 5
+          curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:5000/ | grep 200
+          kill %1 || true
+
+      - name: Quick smoke test (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Start-Process -FilePath "dist\datapeek\datapeek.exe" -NoNewWindow
+          Start-Sleep -Seconds 6
+          $r = Invoke-WebRequest -Uri http://127.0.0.1:5000/ -UseBasicParsing
+          if ($r.StatusCode -ne 200) { throw "Server did not respond" }
+          Stop-Process -Name datapeek -Force -ErrorAction SilentlyContinue
+
+      - name: Package into zip
+        shell: bash
+        run: |
+          cd dist
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            7z a ../${{ matrix.artifact }}.zip datapeek/
+          else
+            zip -r ../${{ matrix.artifact }}.zip datapeek/
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.artifact }}.zip
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/**/*.zip
+          generate_release_notes: true

@@ -1,0 +1,10 @@
+version: "3.9"
+
+services:
+  datapeek:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - MAX_CONTENT_LENGTH=${MAX_CONTENT_LENGTH:-524288000}
+    restart: unless-stopped

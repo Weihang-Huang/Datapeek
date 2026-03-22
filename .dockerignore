@@ -1,0 +1,10 @@
+electron/
+tests/
+__pycache__/
+*.pyc
+.git/
+.gitignore
+*.md
+dist/
+build/
+*.egg-info/

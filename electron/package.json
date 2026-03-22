@@ -1,0 +1,34 @@
+{
+  "name": "datapeek",
+  "version": "1.0.0",
+  "description": "DataPeek — Visual binary data file inspector",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "author": "DataPeek Contributors",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.0.0"
+  },
+  "build": {
+    "appId": "com.datapeek.app",
+    "productName": "DataPeek",
+    "files": [
+      "main.js",
+      "preload.js",
+      "dist/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "dist/datapeek-server",
+        "to": "datapeek-server"
+      }
+    ],
+    "mac": { "target": "dmg" },
+    "win": { "target": "nsis" },
+    "linux": { "target": "AppImage" }
+  }
+}

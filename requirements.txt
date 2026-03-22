@@ -1,0 +1,17 @@
+flask>=3.0
+gunicorn
+pyarrow
+fastparquet
+fastavro
+h5py
+netCDF4
+zarr
+xarray
+numpy
+pandas
+msgpack
+lmdb
+safetensors
+openpyxl
+tables
+pytest

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}DataPeek — Upload{% endblock %}
+
+{% block content %}
+<div class="upload-wrapper">
+    <div class="card upload-card">
+        <h1>DataPeek</h1>
+        <p class="tagline">Visually inspect, edit, and export binary data files</p>
+
+        <div class="dropzone" id="dropzone">
+            <div class="icon">&#128196;</div>
+            <p>Drop your file here or click to browse</p>
+        </div>
+        <input type="file" id="fileInput" hidden>
+
+        <div class="file-info" id="fileInfo"></div>
+        <div class="error-msg" id="errorMsg"></div>
+
+        <button class="btn btn--full" id="uploadBtn" disabled>Upload</button>
+    </div>
+</div>
+
+<!-- Size prompt modal -->
+<div class="modal-overlay" id="sizeModal">
+    <div class="modal-card">
+        <h3>&#9888;&#65039; Large File Detected</h3>
+        <p id="sizeText" style="margin-bottom:16px;"></p>
+        <div style="margin-bottom:14px;">
+            <label style="display:block;margin-bottom:6px;">
+                <input type="radio" name="loadMode" value="full" checked> Full Load
+            </label>
+            <label style="display:block;margin-bottom:6px;">
+                <input type="radio" name="loadMode" value="preview"> Preview
+            </label>
+        </div>
+        <div id="previewRowsWrap" style="display:none;margin-bottom:16px;">
+            <label>Number of rows:
+                <input type="number" id="previewRows" value="1000" min="1" max="1000000"
+                       style="width:100px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;">
+            </label>
+        </div>
+        <div style="display:flex;gap:10px;">
+            <button class="btn btn--outline" id="modalCancel">Cancel</button>
+            <button class="btn" id="modalContinue">Continue</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/upload.js') }}"></script>
+{% endblock %}

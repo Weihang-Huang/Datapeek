@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}DataPeek — Viewer{% endblock %}
+
+{% block head %}
+<!-- Handsontable CE (MIT) via CDN -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable@14.6.1/dist/handsontable.full.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="viz-container">
+
+    <!-- Top bar -->
+    <div class="viz-topbar">
+        <span class="logo">DataPeek</span>
+        <span class="file-badge" id="fileBadge">
+            <span id="fileName">—</span>
+            <span class="fmt" id="fileFormat">—</span>
+        </span>
+        <!-- SQLite table selector -->
+        <div class="table-selector" id="tableSelector">
+            <label>Table:</label>
+            <select id="tableSelect"></select>
+        </div>
+        <button class="btn btn--sm btn--outline" id="closeBtn" title="Back to upload">&#x2715; Close</button>
+    </div>
+
+    <!-- Info bar -->
+    <div class="viz-infobar">
+        <div class="search-box">
+            <label for="searchInput">&#x1F50D;</label>
+            <input type="text" id="searchInput" placeholder="Search cells…">
+        </div>
+        <span id="statsText">— rows &times; — cols</span>
+    </div>
+
+    <!-- Main body (sidebar + grid) -->
+    <div class="viz-body">
+        <div class="tree-sidebar" id="treeSidebar"></div>
+        <div class="grid-area" id="gridArea">
+            <div class="spinner-overlay" id="spinner"><div class="spinner"></div></div>
+            <div id="hotContainer" style="width:100%;height:100%;overflow:hidden;"></div>
+        </div>
+    </div>
+
+    <!-- Bottom bar -->
+    <div class="viz-bottombar">
+        <div class="pagination" id="paginationControls">
+            <button class="btn btn--sm" id="prevPage">&#x25C0; Prev</button>
+            <span id="pageInfo">Page 1 of 1</span>
+            <button class="btn btn--sm" id="nextPage">Next &#x25B6;</button>
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:center;">
+            <div class="export-dropdown" id="exportDropdown">
+                <button class="btn btn--sm" id="exportBtn">&#x2B07; Export</button>
+                <div class="dropdown-menu" id="exportMenu">
+                    <div class="export-mode-toggle">
+                        <label><input type="radio" name="exportScope" value="full" checked> Full</label>
+                        <label><input type="radio" name="exportScope" value="selection"> Selection</label>
+                    </div>
+                    <div class="divider"></div>
+                    <span class="item" data-fmt="csv">CSV</span>
+                    <span class="item" data-fmt="json">JSON</span>
+                    <span class="item" data-fmt="parquet">Parquet</span>
+                    <span class="item" data-fmt="feather">Feather</span>
+                    <span class="item" data-fmt="orc">ORC</span>
+                    <span class="item" data-fmt="avro">Avro</span>
+                    <span class="item" data-fmt="xlsx">Excel (.xlsx)</span>
+                    <span class="item" data-fmt="hdf5">HDF5</span>
+                    <span class="item" data-fmt="msgpack">MessagePack</span>
+                    <span class="item" data-fmt="npy">NumPy (.npy)</span>
+                    <span class="item" data-fmt="pickle">Pickle</span>
+                </div>
+            </div>
+            <button class="btn btn--sm btn--outline" id="newUploadBtn">New Upload</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/handsontable@14.6.1/dist/handsontable.full.min.js"></script>
+<script src="{{ url_for('static', filename='js/visualizer.js') }}"></script>
+<script src="{{ url_for('static', filename='js/export.js') }}"></script>
+{% endblock %}
